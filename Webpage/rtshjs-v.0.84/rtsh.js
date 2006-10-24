@@ -37,7 +37,6 @@ RTSH = {
 			return;
 		}
 		this.syntaxHighlight(1);
-
 		window.scroll(0,0);
 	},
 
@@ -83,8 +82,8 @@ RTSH = {
 			var range = document.selection.createRange();
 			var insText = range.text;
 			range.text = "$bla$";
-			top = range.offsetTop;
-			left = range.offsetLeft;
+			top = range.offsetTop+13;
+			left = range.offsetLeft-42;
 			var text = editor.innerText;
 			var html = editor.innerHTML;
 			var text_pos = text.indexOf("$bla$");
@@ -94,12 +93,13 @@ RTSH = {
 			editor.innerHTML = innerHtml;
 			range.move("character", text_pos + newLines); 
 			range.select();
+			inWidth = document.documentElement.clientWidth - 4;
 		} else {
 			editor = document.getElementById('ffedt');
 			var newNode = document.createElement("caret");
 			newNode.innerHTML = "";
 			window.getSelection().getRangeAt(0).insertNode(newNode);
-			top = newNode.offsetTop;
+			top = newNode.offsetTop + 15;
 			left = newNode.offsetLeft;
 			var html = editor.innerHTML;
 			caret_pos = html.indexOf("<caret></caret>");
@@ -107,7 +107,16 @@ RTSH = {
 			range.selectNode(newNode);
 			range.deleteContents();
 			innerHtml = editor.innerHTML;
+			inWidth = window.innerWidth - 25;
 		}
+		suggestt = document.getElementById('suggest');
+		suggestt.style.top = top + "px";
+		if (left > inWidth - 300) {
+			suggestt.style.left = (inWidth - 300) + "px";
+		} else {
+			suggestt.style.left = left + "px";
+		}
+		suggestt.style.visibility = "visible";
 		alert("Top: " + top + " / Left: " + left);
 		return RTSH.wordbefore(innerHtml, caret_pos);
 	},
@@ -161,11 +170,15 @@ RTSH = {
 			//document.execCommand("inserthtml", false, cc); // crash firefox+linux?
 			if(!arguments[0]) window.getSelection().getRangeAt(0).insertNode(document.createTextNode(cc));
 			x = editor.innerHTML;
+			i = x.indexOf("</div>") + 6;
+			xdiv = x.substring(0,i);
+			x = x.substr(i);
 			x = x.replace(/<br>/g,'\n');
 			x = x.replace(/<.*?>|<\/.*?>/g,''); 	
 			x = x.replace(/\n/g,'<br>');			
 		}
 		else if(browser.ie) {
+			xdiv = "";
 			if(!arguments[0]) document.selection.createRange().text = cc;
 			x = editor.innerHTML;
 			x = x.replace(/<P>/g,'\n');
@@ -180,8 +193,9 @@ RTSH = {
 
 		for(i=0;i<languages[this.language].length;i++) 
 			x = x.replace(languages[this.language][i],languages[this.language][i+1]);
-
-		editor.innerHTML = this.actions.history[this.actions.next()] = (browser.ff) ? x : '<pre>'+x+'</pre>' ;
+		
+		newInner = this.actions.history[this.actions.next()] = (browser.ff) ? x : '<pre>'+x+'</pre>' ;
+		editor.innerHTML = xdiv + newInner;
 	},
 
 	// undo and redo methods
