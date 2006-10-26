@@ -12,6 +12,9 @@ http://syntaxhighlighting.blogspot.com/2006/08/real-time-syntax-highlighting.htm
 RTSH = {
 	range : null,
 	language : null,
+	maxSuggest : 0,
+	suggest : 0,
+	suggVisible : false,
 		
 	// set initial vars and start sh
 	initialize : function() {
@@ -22,14 +25,13 @@ RTSH = {
 			editor = document.getElementById('ffedt');
 			document.designMode = 'on';
 			document.addEventListener('keydown', this.keyHandler, true);
-			document.addEventListener('keyup', this.createSelection, true);
+			document.addEventListener('onclick', this.blabla, true);
 			document.body.focus();
 		}
 		else if(browser.ie) {
 			editor = document.getElementById('ieedt');
 			editor.contentEditable = 'true';
 			document.onkeydown = this.keyHandler;
-			document.onkeyup = this.createSelection;
 		}
 		else {
 			// TODO: textarea without syntax highlighting for non supported browsers
@@ -38,6 +40,11 @@ RTSH = {
 		}
 		this.syntaxHighlight(1);
 		window.scroll(0,0);
+	},
+	
+	blabla : function() {
+		alert("hallo");
+		RTSH.hideSuggestion();
 	},
 
 	// detect browser, for now IE and FF
@@ -57,7 +64,10 @@ RTSH = {
 				&& c != '\n'
 				&& c != '('
 				&& c != ')'
-				&& c != '<') {
+				&& c != '<'
+				&& c != '+'
+				&& c != '-'
+				&& c != '*') {
 			str = c + str;
 			caret_pos--;
 			c = innerHtml.charAt(caret_pos);
@@ -116,14 +126,51 @@ RTSH = {
 		} else {
 			suggestt.style.left = left + "px";
 		}
+		var innerDiv = "";
+		for (var i = 0; i < 10; i++) {
+			innerDiv += "<span id=\"sug_" + i + "\" class=\"nonsug\">David_" + i + "</span><br/>";	
+		}
+		innerDiv += "<span id=\"sug_10\" class=\"nonsug\">David</span>";
+		suggestt.innerHTML = innerDiv;
+		RTSH.maxSuggest = 10;
+		RTSH.suggest = 0;
+		document.getElementById('sug_0').className = "sug";
 		suggestt.style.visibility = "visible";
-		alert("Top: " + top + " / Left: " + left);
+		RTSH.suggVisible = true;
 		return RTSH.wordbefore(innerHtml, caret_pos);
 	},
 	
-	createSelection : function() {
+	hideSuggestion : function() {
+		var sug = document.getElementById('suggest');
+		sug.style.left = "-400px";
+		sug.style.visibility = "hidden";
+		RTSH.suggVisible = false;	
+	},
+	
+	createSuggestion : function() {
 		var word = RTSH.getSubWord();
-		alert(word);
+	},
+	
+	sugDown : function() {
+		if (RTSH.suggVisible) {
+			document.getElementById("sug_" + RTSH.suggest).className = "nonsug";
+			RTSH.suggest++;
+			if (RTSH.suggest > RTSH.maxSuggest) {
+				RTSH.suggest = 0;	
+			}
+			document.getElementById("sug_" + RTSH.suggest).className = "sug";
+		}
+	},
+	
+	sugUp : function() {
+		if (RTSH.suggVisible) {
+			document.getElementById("sug_" + RTSH.suggest).className = "nonsug";
+			RTSH.suggest--;
+			if (RTSH.suggest < 0) {
+				RTSH.suggest = RTSH.maxSuggest;	
+			}
+			document.getElementById("sug_" + RTSH.suggest).className = "sug";
+		}
 	},
 
 	// treat key bindings
@@ -131,6 +178,16 @@ RTSH = {
 		evt = (evt) ? evt : (window.event) ? event : null;
 	  	if(evt) {
 	    	charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : ((evt.which) ? evt.which : 0));
+			if (charCode == 40) {
+				RTSH.sugDown();
+				return;
+			} else if (charCode == 38) {
+				RTSH.sugUp();
+			} else if (charCode == 32 && evt.ctrlKey) {
+				RTSH.createSuggestion();	
+			} else {
+				RTSH.hideSuggestion();
+			}
 		    if((chars.indexOf('|'+charCode+'|')!=-1) && (!evt.ctrlKey && !evt.altKey)) { // syntax highlighting
 			 	RTSH.syntaxHighlight();
 			  	RTSH.findString();
