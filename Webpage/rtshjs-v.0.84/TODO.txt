@@ -4,3 +4,4 @@
 -bug of " without corresponding end "
 -"strings" outside php and outside html attributes are colouring wrong
 -page up/page down get lost (IE only)
+-Import Autocomplete from Thomas and David
