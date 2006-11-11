@@ -25,7 +25,8 @@ RTSH = {
 			editor = document.getElementById('ffedt');
 			document.designMode = 'on';
 			document.addEventListener('keydown', this.keyHandler, true);
-			document.addEventListener('onclick', this.blabla, true);
+			document.addEventListener('keypress', this.keySuperHandler, true);
+			document.addEventListener('mousedown', this.mouseClick, true);
 			document.body.focus();
 		}
 		else if(browser.ie) {
@@ -42,9 +43,43 @@ RTSH = {
 		window.scroll(0,0);
 	},
 	
-	blabla : function() {
-		alert("hallo");
-		RTSH.hideSuggestion();
+	mouseClick : function(evt) {
+		if (RTSH.suggVisible) {
+			var newSelect = false;
+			var suggest = document.getElementById("suggest");
+			var boxY = suggest.offsetTop;
+			var boxX = suggest.offsetLeft;
+			var boxWidth = suggest.offsetWidth - 18;
+			var boxEnd = boxX + suggest.offsetWidth;
+			var boxEndShort = boxEnd - 18;
+			var mouseX = evt.pageX - boxX;
+			var mouseY = evt.pageY - boxY;
+			if (mouseX >= 0 && mouseX <= boxWidth && mouseY >= 0 && mouseY <= suggest.offsetHeight) {
+				for (var i = 0; i < RTSH.maxSuggest; i++) {
+					var sug = document.getElementById("sug_" + i);
+					var sugY = sug.offsetTop;
+					var sugYTop = sugY + sug.offsetHeight;
+					if (mouseY >= sugY && mouseY < sugYTop) {
+						document.getElementById("sug_" + i).className = "sug";
+						RTSH.suggest = i;
+						newSelect = true;
+					} else {
+						document.getElementById("sug_" + i).className = "nonsug";
+					}
+				}
+			}
+			if (newSelect) {
+				if (evt.preventDefault) { 
+				  evt.preventDefault(); 
+				  evt.stopPropagation(); 
+				} else {
+				  evt.returnValue = false;
+				  evt.cancelBubble = true;
+				}
+			} else if ((mouseX < 0 || mouseX > boxWidth + 18) || (mouseY < 0 || mouseY > suggest.offsetHeight))  {
+				RTSH.hideSuggestion();
+			}
+		}
 	},
 
 	// detect browser, for now IE and FF
@@ -126,18 +161,12 @@ RTSH = {
 		} else {
 			suggestt.style.left = left + "px";
 		}
-		var innerDiv = "";
-		for (var i = 0; i < 10; i++) {
-			innerDiv += "<span id=\"sug_" + i + "\" class=\"nonsug\">David_" + i + "</span><br/>";	
-		}
-		innerDiv += "<span id=\"sug_10\" class=\"nonsug\">David</span>";
-		suggestt.innerHTML = innerDiv;
+		suggestt.innerHTML = RTSH.findOptions(RTSH.wordbefore(innerHtml, caret_pos));
 		RTSH.maxSuggest = 10;
 		RTSH.suggest = 0;
 		document.getElementById('sug_0').className = "sug";
 		suggestt.style.visibility = "visible";
 		RTSH.suggVisible = true;
-		return RTSH.wordbefore(innerHtml, caret_pos);
 	},
 	
 	hideSuggestion : function() {
@@ -148,7 +177,7 @@ RTSH = {
 	},
 	
 	createSuggestion : function() {
-		var word = RTSH.getSubWord();
+		RTSH.getSubWord();
 	},
 	
 	sugDown : function() {
@@ -172,6 +201,20 @@ RTSH = {
 			document.getElementById("sug_" + RTSH.suggest).className = "sug";
 		}
 	},
+	
+	keySuperHandler : function(evt) {
+		charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : ((evt.which) ? evt.which : 0));
+		if ((charCode == 40 || charCode == 38) && RTSH.suggVisible) {
+			if (evt.preventDefault) { 
+			  evt.preventDefault(); 
+			  evt.stopPropagation(); 
+			} 
+			else {
+			  evt.returnValue = false;
+			  evt.cancelBubble = true;
+			}
+		}
+	},
 
 	// treat key bindings
 	keyHandler : function(evt) {
@@ -180,9 +223,10 @@ RTSH = {
 	    	charCode = (evt.charCode) ? evt.charCode : ((evt.keyCode) ? evt.keyCode : ((evt.which) ? evt.which : 0));
 			if (charCode == 40) {
 				RTSH.sugDown();
-				return;
+				return true;
 			} else if (charCode == 38) {
 				RTSH.sugUp();
+				return false;
 			} else if (charCode == 32 && evt.ctrlKey) {
 				RTSH.createSuggestion();	
 			} else {
@@ -297,8 +341,42 @@ RTSH = {
 		code = code.replace(/&lt;/g,'<');
 		code = code.replace(/&gt;/g,'>');
 		return code;
+	},
+	
+	
+	findOptions: function(wordPart){
+		var innerDiv = "";
+		var found = 0;
+		for (var i = 0; i < commands.length; i++) {
+			if (commands[i].indexOf(wordPart) == 0) {
+				innerDiv += "<span id=\"sug_" + found + "\" class=\"nonsug\" >" + commands[i] + "</span><br/>";
+				found++;
+				}
+			}
+		return innerDiv;
 	}
 }
+
+commands = [
+"addcontentsline","addtocontents","addtocounter","address","addtolength","addvspace","alph","appendix","arabic","author",
+"backslash","baselineskip","baselinestretch","bf","bibitem","bigskip","boldmath",
+"cal","caption","cdots","centering","circle","cite","cleardoublepage","clearpage","cline","closing",
+"dashbox","date","ddots","dotfill",
+"em","ensuremath",
+"fbox","flushbottom","fnsymbol","footnote","footnotemark","footnotesize","footnotetext","frac","frame","framebox","frenchspacing",
+"hfill","hline","hrulefill","hspace","huge","Huge","hyphenation",
+"include","includeonly","indent","input","it","item",
+"kill",
+"label","large","Large","LARGE","ldots","left","lefteqn","line","linebreak","linethickness","linewidth","location",
+"makebox","maketitle","markboth","markright","mathcal","mathop","mbox","medskip","multicolumn","multiput",
+"newcommand","newcounter","newenvironment","newfont","newlength","newline","newpage","newsavebox","newtheorem","nocite","noindent","nolinebreak","normalsize","nopagebreak","not",
+"onecolumn","opening","oval","overbrace","overline",
+"pagebreak","pagenumbering","pageref","pagestyle","par","parbox","parindent","parskip","protect","providecommand","put",
+"raggedbottom","raggedleft","raggedright","raisebox","ref","renewcommand","right","rm","roman","rule",
+"savebox","sbox","sc","scriptsize","setcounter","setlength","settowidth","sf","shortstack","signature","sl","small","smallskip","sqrt","stackrel",
+"tableofcontents","telephone","textwidth","textheight","thanks","thispagestyle","tiny","title","today","tt","twocolumn","typeout","typein",
+"underbrace","underline","unitlength","usebox","usecounter",
+"value","vdots","vector","verb","vfill","vline","vphantom","vspace"]
 
 // language specific regular expressions
 // TODO: distribute languages into specific [language].js files
