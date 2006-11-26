@@ -1,0 +1,7 @@
+-copy and paste of last line generates <p></p>
+-copy and paste should trigger parser to highlight code just pasted
+-first undo seems to be going back 2 levels
+-bug of " without corresponding end "
+-"strings" outside php and outside html attributes are colouring wrong
+-page up/page down get lost (IE only)
+-Import Autocomplete from Thomas and David
