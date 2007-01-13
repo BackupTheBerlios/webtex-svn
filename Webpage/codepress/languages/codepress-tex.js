@@ -12,9 +12,6 @@ syntax =  [
 	/(%.*)(\ )/g,'<d>$1</d>$2'//comments, ends with a space (has to be adapted)
 	//Problem with first and last line.
 ];
-
-
-
 CodePress.initialize();
 
 
