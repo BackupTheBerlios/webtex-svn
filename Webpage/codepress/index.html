@@ -10,5 +10,37 @@
 	<script type="text/javascript" src="languages/codepress-tex.js?timestamp=0"></script>	
 	<script type="text/javascript">CodePress.language = 'tex';</script>
 </head>
-<body id="ffedt"><pre id="ieedt">class Test {}</pre></body>
+<body id="ffedt"><pre id="ieedt">
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+\begin{document}
+\section{Sine-based controller}
+The goal of the first part was to implement a sine-based controller using the usual $sin(x)$ function:
+\begin{equation}
+y=A_o\cdot sin(f\cdot x+\phi)-B,
+\end{equation}
+where $A_o$ is the amplitude, $f$ the frequency, $\phi$ a shift in the phase and $B$ an offset.
+The function was applied on each of the four legs in order to generate a controlled movement. For simplicity reasons we only used two functions having different parameters, one for the front and one for the rear legs. The following two function have been used for the simulations:
+\begin{equation}
+fpos1 = 0.2\cdot ampl\cdot sin(freq\cdot elapsed\_time)+B,
+\end{equation}
+\begin{equation}
+hpos1 = 1.0\cdot ampl\cdot sin(freq\cdot elapsed\_time)+B,
+\end{equation}
+which can directly be derived from (1).\\
+\newline
+In order to find the best values for the two parameters (amplitude and frequency), we calculated the robot speed and plotted the obtained values using Matlab. The speed can directly be derived from the distance, the dog is able to cover during a certain time (30 seconds in our case). The distance was calculated using the starting and the ending point and applying the Euclidian distance formula, which is the following:
+\begin{equation}
+distance = \sqrt{((x\_end - x\_start)^2 + (z\_end - z\_start)^2)}.
+\end{equation}
+Z had to be chosen due to a Webots particularity. The vertical axis is named y and the horizontal axis x, z.\\
+The obtained speed values for the an certain interval of amplitudes and frequencies were written in a ascii-file and plotted using Matlab. From the following figure, the optimal speed can be read and the ideal parameters can be derived. The intervals are shown on the corresponding axis.
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.9]{Speed_plot.fig}
+\caption{}
+\label{}
+\end{figure}
+\end{document}
+</pre></body>
 </html>
