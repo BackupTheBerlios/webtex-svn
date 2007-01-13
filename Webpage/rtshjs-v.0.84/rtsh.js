@@ -7,6 +7,7 @@ Just keep my credits somewhere around. Thanks.
 Fernando M.A.d.S. - fermads@gmail.com
 
 http://syntaxhighlighting.blogspot.com/2006/08/real-time-syntax-highlighting.html
+This is comment
 */
 
 RTSH = {
